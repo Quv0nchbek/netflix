@@ -1,0 +1,44 @@
+name: SonarQube Analysis
+
+on:
+  push:
+    branches:
+      - main  # yoki sizning asosiy filialingiz
+  pull_request:
+    branches:
+      - main  # yoki sizning asosiy filialingiz
+
+jobs:
+  sonar:
+    name: SonarQube Analysis
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Kodni tekshirish
+      uses: actions/checkout@v2
+
+    - name: JDK 17 ni o'rnatish
+      uses: actions/setup-java@v2
+      with:
+        java-version: 17
+
+    - name: SonarQube qaramliklarini kesh qilish
+      uses: actions/cache@v2
+      with:
+        path: ~/.sonar/cache
+        key: ${{ runner.os }}-sonar-${{ hashFiles('**/*.java') }}
+
+    - name: SonarScanner o'rnatish
+      run: |
+        curl -sSLo sonar-scanner.zip https://github.com/SonarSource/sonar-scanner-cli/releases/download/4.6.2.2472/sonar-scanner-cli-4.6.2.2472-linux.zip
+        unzip sonar-scanner.zip
+        mv sonar-scanner-4.6.2.2472-linux sonar-scanner
+        export PATH=$PWD/sonar-scanner/bin:$PATH
+
+    - name: SonarQube scanner-ni ishga tushurish
+      run: |
+        sonar-scanner \
+          -Dsonar.projectKey=YourProjectKey \
+          -Dsonar.organization=YourOrganization \
+          -Dsonar.host.url=https://your-sonarqube-url.com \
+          -Dsonar.login=${{ secrets.SONAR_TOKEN }}
