@@ -1,0 +1,13 @@
+{
+  "name": "netflix",
+  "version": "1.0.0",
+  "description": "Netflix Clone",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {},
+  "devDependencies": {},
+  "author": "",
+  "license": "ISC"
+}
