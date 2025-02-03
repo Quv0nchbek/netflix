@@ -1,12 +1,13 @@
 pipeline {
     agent any
     environment {
-        TRIVY_VERSION = "0.59.0"  // Trivy versiyasi
+        TRIVY_VERSION = "0.59.0"
+        TRIVY_PATH = "/usr/local/bin/trivy"  // Trivy joylashgan yo‘lni ko‘rsatish
     }
+    
     stages {
         stage('Checkout Code') {
             steps {
-                // Kodingizni Git-dan olib kelish
                 git 'https://github.com/your-repo/your-project.git'
             }
         }
@@ -14,13 +15,13 @@ pipeline {
         stage('Install Trivy') {
             steps {
                 script {
-                    // Trivy'ni o'rnatish (agar avval o'rnatilmagan bo'lsa)
                     sh '''
                     if ! command -v trivy &> /dev/null; then
                         echo "Trivy is not installed. Installing..."
-                        wget https://github.com/aquasecurity/trivy/releases/download/v$TRIVY_VERSION/trivy_Linux-64bit.tar.gz
+                        wget https://github.com/aquasecurity/trivy/releases/download/v''' + TRIVY_VERSION + '''/trivy_Linux-64bit.tar.gz
                         tar -xvzf trivy_Linux-64bit.tar.gz
                         sudo mv trivy /usr/local/bin/
+                        sudo chmod +x /usr/local/bin/trivy
                     else
                         echo "Trivy is already installed."
                     fi
@@ -32,9 +33,11 @@ pipeline {
         stage('Run Trivy Scan') {
             steps {
                 script {
-                    // Trivy skanerlashni boshlash
                     echo "Running Trivy scan on the project..."
-                    sh 'trivy fs . > trivyfs.txt'
+                    sh '''
+                    export PATH=$PATH:/usr/local/bin
+                    trivy fs . > trivyfs.txt
+                    '''
                 }
             }
         }
@@ -42,7 +45,6 @@ pipeline {
         stage('Publish Results') {
             steps {
                 script {
-                    // Trivy skanerlash natijalarini tekshirish va natijalarni chiqarish
                     echo "Trivy scan results: "
                     sh 'cat trivyfs.txt'
                 }
@@ -52,7 +54,6 @@ pipeline {
 
     post {
         always {
-            // Ish tugagandan keyin bajariladigan ishlar (masalan, tozalash)
             cleanWs()
         }
     }
